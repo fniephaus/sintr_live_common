@@ -1,11 +1,11 @@
 import 'package:gcloud/db.dart' as db;
 import 'package:gcloud/service_scope.dart' as ss;
 import 'package:gcloud/src/datastore_impl.dart' as datastore_impl;
-import 'package:sintr_common/auth.dart';
-import "package:sintr_common/configuration.dart" as config;
-import 'package:sintr_common/logging_utils.dart' as log;
-import 'package:sintr_common/tasks.dart' as tasks;
-import "package:sintr_common/gae_utils.dart" as gae_utils;
+import 'package:sintr_live_common/auth.dart';
+import "package:sintr_live_common/configuration.dart" as config;
+import 'package:sintr_live_common/logging_utils.dart' as log;
+import 'package:sintr_live_common/tasks.dart' as tasks;
+import "package:sintr_live_common/gae_utils.dart" as gae_utils;
 
 main() async {
   log.setupLogging();

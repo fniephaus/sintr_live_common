@@ -7,10 +7,10 @@ import 'dart:io' as io;
 
 import 'package:gcloud/service_scope.dart' as ss;
 import 'package:gcloud/storage.dart' as storage;
-import 'package:sintr_common/auth.dart';
-import "package:sintr_common/configuration.dart" as config;
-import "package:sintr_common/gae_utils.dart" as gae_utils;
-import 'package:sintr_common/logging_utils.dart';
+import 'package:sintr_live_common/auth.dart';
+import "package:sintr_live_common/configuration.dart" as config;
+import "package:sintr_live_common/gae_utils.dart" as gae_utils;
+import 'package:sintr_live_common/logging_utils.dart';
 import 'package:path/path.dart' as path_utils;
 
 const PERMITTED_FILE_EXTENSIONS = const <String>[".dart", ".json", ".sh", ".yaml"];
