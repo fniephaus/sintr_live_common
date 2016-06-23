@@ -25,7 +25,7 @@ const VERBOSE_LOGGING = true;
 /// Create tasks from items in an input bucket, in [incremental] mode this
 /// will only create tasks if there was no output already present.
 Future createTasks(String JobName, String inputBucketName,
-    List<String> objectNames, resultsBucketName, sourceBucketName,
+    List<String> objectNames, resultsBucketName, Map<String, String> sources,
     {incremental: false}) async {
   String projectId = config.configuration.projectName;
 
@@ -70,9 +70,9 @@ Future createTasks(String JobName, String inputBucketName,
 
     bool ok = false;
 
-    List<int> md5Bytes =
-      (await cloudstore.bucket(sourceBucketName).info(SOURCE_NAME)).md5Hash;
-    String base64Md5 = BASE64.encode(md5Bytes);
+    // List<int> md5Bytes =
+    //   (await cloudstore.bucket(sourceBucketName).info(SOURCE_NAME)).md5Hash;
+    // String base64Md5 = BASE64.encode(md5Bytes);
 
     log.info("About to create ${taskList.length} tasks");
 
@@ -82,9 +82,11 @@ Future createTasks(String JobName, String inputBucketName,
         await taskController.createTasks(
             // Input locations
             taskList,
+
+            sources,
             // Source locations
-            new gae_utils.CloudStorageLocation(
-                sourceBucketName, SOURCE_NAME, base64Md5),
+            // new gae_utils.CloudStorageLocation(
+            //     sourceBucketName, SOURCE_NAME, base64Md5),
 
             // results
             resultsBucketName);

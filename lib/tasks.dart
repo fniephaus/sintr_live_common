@@ -5,6 +5,8 @@
 library sintr_common.tasks;
 
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:gcloud/db.dart' as db;
 import 'package:sintr_live_common/gae_utils.dart';
@@ -96,40 +98,30 @@ class Task {
     return backingstore.lastUpdateEpochMs;
   }
 
-  //TODO: Generalise these to support multiple data-source strategy
-  /// Policy based syncronisation
-  Future<CloudStorageLocation> get inputSource async {
-    log.trace("Get inputSource on Task for $_objectKey");
+  Future<Map<String, String>> get source async {
+    log.trace("Get source on Task for $_objectKey");
 
     await _policyBasedSyncBackingStore();
     if (backingstore == null) return null;
 
-    return new CloudStorageLocation(backingstore.inputCloudStorageBucketName,
-        backingstore.inputCloudStorageObjectPath, backingstore.inputCloudStorageMd5);
+    List<int> sourceBlob = backingstore.sourceBlob;
+    return JSON.decode(UTF8.decode(GZIP.decode(sourceBlob)));
   }
 
-  /// Get the location where the results will be stored
-  /// Policy based syncronisation
-  Future<CloudStorageLocation> get resultLocation async {
-    log.trace("Get resultLocation on Task for $_objectKey");
+  Future<String> get result async {
+    log.trace("Get result on Task for $_objectKey");
 
     await _policyBasedSyncBackingStore();
     if (backingstore == null) return null;
 
-    return new CloudStorageLocation(backingstore.resultCloudStorageBucketName,
-        backingstore.resultCloudStorageObjectPath, backingstore.resultCloudStorageMd5);
+    return backingstore.output;
   }
 
-  /// Get the location of the source
-  /// Policy syncronised
-  Future<CloudStorageLocation> get sourceLocation async {
-    log.trace("Get sourceLocation on Task for $_objectKey");
-
-    await _policyBasedSyncBackingStore();
-    if (backingstore == null) return null;
-
-    return new CloudStorageLocation(backingstore.sourceCloudStorageBucketName,
-        backingstore.sourceCloudStorageObjectPath, backingstore.sourceCloudStorageMd5);
+  Future setResult(String result) async {
+    log.trace("Set result on Task for $_objectKey -> $result");
+    backingstore.output = result;
+    await _pushBackingStore();
+    log.trace("Set result on Task for $_objectKey -> $result : OK");
   }
 
   /// Record that this task has made progress
@@ -190,32 +182,18 @@ class _TaskModel extends db.Model {
   @db.IntProperty()
   int failureCount;
 
-  @db.StringProperty()
-  String inputCloudStorageBucketName;
+  // Input/Output
 
   @db.StringProperty()
-  String inputCloudStorageObjectPath;
+  String input;
 
   @db.StringProperty()
-  String inputCloudStorageMd5;
+  String output;
 
-  @db.StringProperty()
-  String resultCloudStorageBucketName;
+  // Source
 
-  @db.StringProperty()
-  String resultCloudStorageObjectPath;
-
-  @db.StringProperty()
-  String resultCloudStorageMd5;
-
-  @db.StringProperty()
-  String sourceCloudStorageBucketName;
-
-  @db.StringProperty()
-  String sourceCloudStorageObjectPath;
-
-  @db.StringProperty()
-  String sourceCloudStorageMd5;
+  @db.BlobProperty()
+  List<int> sourceBlob;
 
   @db.StringProperty()
   String ownerID;
@@ -224,21 +202,13 @@ class _TaskModel extends db.Model {
 
   _TaskModel.fromData(
       this.parentJobName,
-      CloudStorageLocation inputLocation,
-      CloudStorageLocation sourceLocation,
-      String this.resultCloudStorageBucketName,
-      String this.resultCloudStorageObjectPath) {
+      String this.input,
+      Map<String, String> sources) {
     lifecycleState = _intFromLifecycle(LifecycleState.READY);
     lastUpdateEpochMs = new DateTime.now().millisecondsSinceEpoch;
     failureCount = 0;
     ownerID = _UNALLOCATED_OWNER;
-    inputCloudStorageBucketName = inputLocation.bucketName;
-    inputCloudStorageObjectPath = inputLocation.objectPath;
-    inputCloudStorageMd5 = inputLocation.md5;
-
-    sourceCloudStorageBucketName = sourceLocation.bucketName;
-    sourceCloudStorageObjectPath = sourceLocation.objectPath;
-    sourceCloudStorageMd5 = sourceLocation.md5;
+    sourceBlob = GZIP.encode(UTF8.encode(JSON.encode(sources)));
   }
 }
 
@@ -323,10 +293,10 @@ class TaskController {
 
   // Utility methods
   Future createTasks(
-      List<CloudStorageLocation> inputLocations,
-      CloudStorageLocation sourceLocation,
+      List<String> inputs,
+      Map<String, String> sources,
       String resultCloudStorageBucketName) async {
-    log.info("Creating ${inputLocations.length} tasks");
+    log.info("Creating ${inputs.length} tasks");
 
     int count = 0;
 
@@ -334,13 +304,11 @@ class TaskController {
     // datastore errors
 
     var inserts = <_TaskModel>[];
-    for (CloudStorageLocation inputLocation in inputLocations) {
+    for (String input in inputs) {
       _TaskModel task = new _TaskModel.fromData(
           jobName,
-          inputLocation,
-          sourceLocation,
-          resultCloudStorageBucketName,
-          outputPathFromInput(inputLocation));
+          input,
+          sources);
       inserts.add(task);
 
       if (inserts.length >= DATASTORE_TRANSACTION_SIZE) {
