@@ -108,6 +108,15 @@ class Task {
     return JSON.decode(UTF8.decode(GZIP.decode(sourceBlob)));
   }
 
+  Future<String> get input async {
+    log.trace("Get input on Task for $_objectKey");
+
+    await _policyBasedSyncBackingStore();
+    if (backingstore == null) return null;
+
+    return backingstore.input;
+  }
+
   Future<String> get result async {
     log.trace("Get result on Task for $_objectKey");
 
