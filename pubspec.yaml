@@ -1,4 +1,4 @@
-name: sintr_common
+name: sintr_live_common
 description: Common services library for the sintr client and workers
 version: 0.0.1
 author: Dart Team <misc@dartlang.org>
