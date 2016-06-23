@@ -7,8 +7,8 @@ library sintr_common.tasks;
 import 'dart:async';
 
 import 'package:gcloud/db.dart' as db;
-import 'package:sintr_common/gae_utils.dart';
-import 'package:sintr_common/logging_utils.dart' as log;
+import 'package:sintr_live_common/gae_utils.dart';
+import 'package:sintr_live_common/logging_utils.dart' as log;
 import 'package:uuid/uuid.dart';
 
 const int DATASTORE_TRANSACTION_SIZE = 250;
