@@ -303,8 +303,7 @@ class TaskController {
   // Utility methods
   Future createTasks(
       List<String> inputs,
-      Map<String, String> sources,
-      String resultCloudStorageBucketName) async {
+      Map<String, String> sources) async {
     log.info("Creating ${inputs.length} tasks");
 
     int count = 0;
