@@ -6,10 +6,10 @@ import 'package:logging/logging.dart' as logging;
 
 logging.Logger _logger;
 
-info(String message, [int level = 0]) => _logger.info(_repeat("\t", level), message);
-trace(String message, [int level = 0]) => _logger.finer(_repeat("\t", level), message);
-debug(String message, [int level = 0]) => _logger.fine(_repeat("\t", level), message);
-alert(String message, [int level = 0]) => _logger.shout(_repeat("\t", level), message);
+info(String message, [int level = 0]) => _logger.info(_repeat("\t", level) + message);
+trace(String message, [int level = 0]) => _logger.finer(_repeat("\t", level) + message);
+debug(String message, [int level = 0]) => _logger.fine(_repeat("\t", level) + message);
+alert(String message, [int level = 0]) => _logger.shout(_repeat("\t", level) + message);
 
 perf(String name, int ms) => _logger.fine("PERF: $name : $ms");
 
