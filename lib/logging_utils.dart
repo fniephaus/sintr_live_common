@@ -6,10 +6,10 @@ import 'package:logging/logging.dart' as logging;
 
 logging.Logger _logger;
 
-info(String message) => _logger.info(message);
-trace(String message) => _logger.finer(message);
-debug(String message) => _logger.fine(message);
-alert(String message) => _logger.shout(message);
+info(String message, [int level = 0]) => _logger.info(_repeat("\t", level), message);
+trace(String message, [int level = 0]) => _logger.finer(_repeat("\t", level), message);
+debug(String message, [int level = 0]) => _logger.fine(_repeat("\t", level), message);
+alert(String message, [int level = 0]) => _logger.shout(_repeat("\t", level), message);
 
 perf(String name, int ms) => _logger.fine("PERF: $name : $ms");
 
@@ -29,4 +29,12 @@ _setupLocalLogging() {
   logging.Logger.root.onRecord.listen((logging.LogRecord rec) {
     print('${rec.loggerName}: ${rec.level.name}: ${rec.time}: ${rec.message}');
   });
+}
+
+String _repeat(String s, int count) {
+  StringBuffer sb = new StringBuffer();
+  for (int i = 0; i < count; i++) {
+    sb.write(s);
+  }
+  return sb.toString();
 }
