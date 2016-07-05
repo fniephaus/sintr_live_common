@@ -189,6 +189,9 @@ class _TaskModel extends db.Model {
   int lastUpdateEpochMs;
 
   @db.IntProperty()
+  int creationEpochMs;
+
+  @db.IntProperty()
   int failureCount;
 
   // Input/Output
@@ -215,6 +218,7 @@ class _TaskModel extends db.Model {
       Map<String, String> sources) {
     lifecycleState = _intFromLifecycle(LifecycleState.READY);
     lastUpdateEpochMs = new DateTime.now().millisecondsSinceEpoch;
+    creationEpochMs = lastUpdateEpochMs;
     failureCount = 0;
     ownerID = _UNALLOCATED_OWNER;
     sourceBlob = GZIP.encode(UTF8.encode(JSON.encode(sources)));
@@ -264,6 +268,7 @@ class TaskController {
 
     // TODO: Add co-ordination of the job to outside the control scripts
     var query = _db.query(_TaskModel)
+      ..order("-creationEpochMs")
       ..filter("lifecycleState =", READY_STATE)..limit(100);
 
     await for (_TaskModel model in query.run()) {
