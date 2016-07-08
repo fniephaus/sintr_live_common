@@ -114,7 +114,9 @@ class Task {
     await _policyBasedSyncBackingStore();
     if (backingstore == null) return null;
 
-    return backingstore.input;
+    return UTF8.decode(GZIP.decode(backingstore.inputBlob));
+
+    // return backingstore.input;
   }
 
   Future<String> get result async {
@@ -123,12 +125,16 @@ class Task {
     await _policyBasedSyncBackingStore();
     if (backingstore == null) return null;
 
-    return backingstore.output;
+    return UTF8.decode(GZIP.decode(backingstore.outputBlob));
+
+    // return backingstore.output;
   }
 
   Future setResult(String result) async {
     log.trace("Set result on Task for $_objectKey -> $result");
-    backingstore.output = result;
+
+
+    backingstore.outputBlob = GZIP.encode(UTF8.encode(result));
     await _pushBackingStore();
     log.trace("Set result on Task for $_objectKey -> $result : OK");
   }
@@ -196,14 +202,14 @@ class _TaskModel extends db.Model {
 
   // Input/Output
 
-  @db.StringProperty()
-  String input;
+  // @db.StringProperty()
+  // String input;
 
   @db.BlobProperty()
   List<int> inputBlob;
 
-  @db.StringProperty()
-  String output;
+  // @db.StringProperty()
+  // String output;
 
   @db.BlobProperty()
   List<int> outputBlob;
@@ -221,13 +227,15 @@ class _TaskModel extends db.Model {
 
   _TaskModel.fromData(
       this.parentJobName,
-      String this.input,
+      String input,
       Map<String, String> sources) {
     lifecycleState = _intFromLifecycle(LifecycleState.READY);
     lastUpdateEpochMs = new DateTime.now().millisecondsSinceEpoch;
     creationEpochMs = lastUpdateEpochMs;
     failureCount = 0;
     ownerID = _UNALLOCATED_OWNER;
+
+    inputBlob = GZIP.encode(UTF8.encode(input));
     sourceBlob = GZIP.encode(UTF8.encode(JSON.encode(sources)));
   }
 }
