@@ -199,8 +199,15 @@ class _TaskModel extends db.Model {
   @db.StringProperty()
   String input;
 
+  @db.BlobProperty()
+  List<int> inputBlob;
+
   @db.StringProperty()
   String output;
+
+  @db.BlobProperty()
+  List<int> outputBlob;
+
 
   // Source
 
