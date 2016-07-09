@@ -382,6 +382,24 @@ class TaskController {
     log.info("$i tasks deleted");
   }
 
+  Future<List<String>> queryResultsForJob() async {
+    log.info("Query results for $jobName");
+
+    final int DONE_STATE = _intFromLifecycle(LifecycleState.DONE);
+    var query = _db.query(_TaskModel)
+      ..filter("lifecycleState =", DONE_STATE)
+      ..filter("jobName =", jobName);
+
+      List<String> results = [];
+
+    await for (_TaskModel model in query.run()) {
+      Task t = new Task._fromTaskModel(model);
+       results.add(await t.result);
+    }
+
+    return results;
+  }
+
   Future<Map<String, int>> queryTasksReady() async {
     log.info("Query task ready");
     // Task -> ready count
