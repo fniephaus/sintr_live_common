@@ -186,7 +186,7 @@ class Task {
 @db.Kind()
 class _TaskModel extends db.Model {
   @db.StringProperty()
-  String parentJobName;
+  String jobName;
 
   @db.IntProperty()
   int lifecycleState;
@@ -226,7 +226,7 @@ class _TaskModel extends db.Model {
   _TaskModel();
 
   _TaskModel.fromData(
-      this.parentJobName,
+      this.jobName,
       String input,
       Map<String, String> sources) {
     lifecycleState = _intFromLifecycle(LifecycleState.READY);
