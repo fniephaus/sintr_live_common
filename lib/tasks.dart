@@ -410,7 +410,7 @@ class TaskController {
     var query = _db.query(_TaskModel)..filter("lifecycleState =", READY_STATE);
 
     await for (_TaskModel model in query.run()) {
-      String parentJobName = model.parentJobName;
+      String parentJobName = model.jobName;
       readyCounts.putIfAbsent(parentJobName, () => 0);
       readyCounts[parentJobName]++;
     }
@@ -426,7 +426,7 @@ class TaskController {
     int i = 0;
     var query = _db.query(_TaskModel);
     await for (_TaskModel model in query.run()) {
-      String parentJobName = model.parentJobName;
+      String parentJobName = model.jobName;
       int state = model.lifecycleState;
 
       stateCounts.putIfAbsent(parentJobName, () => {});
