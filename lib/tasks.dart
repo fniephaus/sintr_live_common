@@ -417,17 +417,17 @@ class TaskController {
     return readyCounts;
   }
 
-  Future<Map<String, Map<int, int>>> queryTaskState() async {
+  Future<Map<String, Map<String, int>>> queryTaskState() async {
     log.info("Query task state");
 
     // Task -> state - count
-    Map<String, Map<int, int>> stateCounts = {};
+    Map<String, Map<String, int>> stateCounts = {};
 
     int i = 0;
     var query = _db.query(_TaskModel);
     await for (_TaskModel model in query.run()) {
       String parentJobName = model.jobName;
-      int state = model.lifecycleState;
+      String state = model.lifecycleState.toString();
 
       stateCounts.putIfAbsent(parentJobName, () => {});
       stateCounts[parentJobName].putIfAbsent(state, () => 0);
